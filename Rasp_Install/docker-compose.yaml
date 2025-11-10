@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: home-assistant
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./ha/config:/config
+    environment:
+      - TZ=Europe/Rome
+
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"       # HTTP
+      - "81:81"       # interfaccia admin
+      - "443:443"     # HTTPS
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - ha-net
+
+  duckdns:
+    image: linuxserver/duckdns
+    container_name: duckdns
+    restart: unless-stopped
+    environment:
+      - SUBDOMAINS=tuosubdomain   # <--- sostituire
+      - TOKEN=iltuoduckdnstoken   # <--- sostituire
+      - TZ=Europe/Rome
+    volumes:
+      - ./duckdns/config:/config
+    networks:
+      - ha-net
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    volumes:
+      - ./radarr/config:/config
+      - ./media/movies:/movies
+      - ./downloads:/downloads
+    networks:
+      - ha-net
+
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Rome
+    volumes:
+      - ./prowlarr/config:/config
+    networks:
+      - ha-net
+
+  hyperion:
+    image: hyperion/hyperion.ng:latest
+    container_name: hyperion
+    restart: unless-stopped
+    devices:
+      - "/dev/video0:/dev/video0"  # framegrabber per Kodi
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./hyperion/config:/config
+    network_mode: host
+
+  ha-backup:
+    image: offen/docker-volume-backup
+    container_name: ha-backup
+    restart: unless-stopped
+    environment:
+      - BACKUP_CRON=0 3 * * *                # ogni notte alle 3
+      - BACKUP_FILENAME=ha-backup-%Y-%m-%dT%H-%M-%S.tar.gz
+      - BACKUP_LATEST_SYMLINK=true
+    volumes:
+      - ./ha/config:/backup/homeassistant:ro
+      - ./backups:/archive
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ha-net
+
+networks:
+  ha-net:
+    driver: bridge

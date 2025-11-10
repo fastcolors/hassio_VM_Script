@@ -1,0 +1,66 @@
+INSTALLAZIONE E CONFIGURAZIONE DOCKER STACK RASPBERRY PI 4
+========================================================
+
+1️⃣ Preparazione sistema
+- Assicurati di avere Raspberry Pi 4 con almeno 8GB RAM.
+- Usa Raspberry Pi OS 64-bit (Desktop o Lite).
+
+2️⃣ Esecuzione script di installazione
+- Copia lo script install.sh sul Pi:
+    scp install.sh pi@raspberrypi.local:~
+- Rendi eseguibile:
+    chmod +x install.sh
+- Esegui lo script:
+    ./install.sh
+- Riavvia il Raspberry Pi.
+
+3️⃣ Configurazione Docker Compose
+- Copia il file docker-compose.yml nella stessa cartella, ad esempio ~/docker
+- Modifica i valori:
+  - DuckDNS: SUBDOMAINS=tuosubdomain
+  - DuckDNS: TOKEN=iltuoduckdnstoken
+  - Radarr/Prowlarr: percorsi media/downloads se diversi
+- Assicurati che la rete `ha-net` sia presente (Docker Compose la crea automaticamente).
+
+4️⃣ Avvio stack
+- Entra nella cartella:
+    cd ~/docker
+- Lancia i container:
+    docker-compose up -d
+
+5️⃣ Accesso ai servizi
+- Home Assistant: http://IP_RPI:8123 (interno LAN)
+- Nginx Proxy Manager: http://IP_RPI:81
+- Radarr: http://IP_RPI:7878
+- Prowlarr: http://IP_RPI:9696
+- Hyperion: configurazione via http://IP_RPI:8090 (porta default container)
+
+6️⃣ Configurazione Nginx Proxy Manager per Home Assistant
+- Accedi all’interfaccia admin (port 81)
+- Crea un “Proxy Host”:
+    - Domain Names: tuosubdomain.duckdns.org
+    - Scheme: http
+    - Forward Hostname / IP: homeassistant
+    - Forward Port: 8123
+    - SSL: seleziona “Request a new SSL certificate”
+- Salva e prova l’accesso esterno via https://tuosubdomain.duckdns.org
+
+7️⃣ Backup automatico
+- I backup di Home Assistant vengono salvati in ~/docker/backups
+- Contengono la cartella /config compressa
+- Puoi sincronizzare con NAS o cloud usando rclone/rsync
+
+8️⃣ Kodi + Hyperion
+- Kodi: installato nativamente su Raspberry Pi (LibreELEC o Raspberry Pi OS)
+- Hyperion.NG container legge il framegrabber di Kodi (/dev/video0)
+- Configura Hyperion via interfaccia web
+- Backup config Hyperion in ~/docker/hyperion/config
+
+9️⃣ Aggiornamenti
+- Aggiorna i container con:
+    docker-compose pull
+    docker-compose up -d
+- Aggiorna Raspberry Pi OS con:
+    sudo apt update && sudo apt upgrade -y
+
+🎉 Tutto pronto! Buon divertimento con il tuo media server e automazione domestica!
