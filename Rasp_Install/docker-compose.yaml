@@ -5,14 +5,14 @@ services:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: home-assistant
     restart: unless-stopped
-    networks:
-      - ha-net
     volumes:
       - ./ha/config:/config
     devices:
       - /dev/serial/by-id/usb-ITEAD_SONOFF_Zigbee_3.0_USB_Dongle_Plus_V2_20220812104623-if00:/dev/ttyACM0
     environment:
       - TZ=Europe/Rome
+    networks:
+      - ha-net
 
   hass-configurator:
     image: "causticlab/hass-configurator-docker:latest"
@@ -20,8 +20,6 @@ services:
     restart: always
     ports:
       - "3218:3218/tcp"
-    networks:
-      - ha-net  # use same network as HA if needed
     volumes:
       # Configurator's own settings
       - ./data/configurator-config:/config
@@ -30,6 +28,8 @@ services:
     environment:
       - HC_BASEPATH=/hass-config/
       - HC_ALLOWED_NETWORKS=192.168.0.0/24
+    networks:
+      - ha-net  # use same network as HA if needed
 
   nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:latest
@@ -43,7 +43,7 @@ services:
       - ./nginx/data:/data
       - ./nginx/letsencrypt:/etc/letsencrypt
     networks:
-      - ha-net
+      - ha-net # use same network as HA if needed
 
   ha-backup:
     image: offen/docker-volume-backup
@@ -58,7 +58,7 @@ services:
       - ./backups:/archive
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - ha-net
+      - ha-net # use same network as HA if needed
 
   hyperion:
     image: sirfragalot/hyperion.ng:latest
@@ -70,7 +70,7 @@ services:
       - TZ=Europe/Rome
     volumes:
       - ./hyperion/config:/config
-    network_mode: host
+    network_mode: host # use host network for grab
 
 networks:
   ha-net:
