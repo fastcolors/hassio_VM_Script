@@ -45,20 +45,20 @@ services:
     networks:
       - ha-net # use same network as HA if needed
 
-  ha-backup:
-    image: offen/docker-volume-backup
-    container_name: ha-backup
-    restart: unless-stopped
-    environment:
-      - BACKUP_CRON=0 3 * * *                # ogni notte alle 3
-      - BACKUP_FILENAME=ha-backup-%Y-%m-%dT%H-%M-%S.tar.gz
-      - BACKUP_LATEST_SYMLINK=true
-    volumes:
-      - ./ha/config:/backup/homeassistant:ro
-      - ./backups:/archive
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - ha-net # use same network as HA if needed
+#  ha-backup:
+#    image: offen/docker-volume-backup
+#    container_name: ha-backup
+#    restart: unless-stopped
+#    environment:
+#      - BACKUP_CRON=0 3 * * *                # ogni notte alle 3
+#      - BACKUP_FILENAME=ha-backup-%Y-%m-%dT%H-%M-%S.tar.gz
+#      - BACKUP_LATEST_SYMLINK=true
+#    volumes:
+#      - ./ha/config:/backup/homeassistant:ro
+#      - ./backups:/archive
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#    networks:
+#      - ha-net # use same network as HA if needed
 
   hyperion:
     image: sirfragalot/hyperion.ng:latest
@@ -89,7 +89,6 @@ services:
         - WILDCARD_ALIAS=false
         - SECONDS=120
         - LOG_LEVEL=info
-
 
 networks:
   ha-net:
