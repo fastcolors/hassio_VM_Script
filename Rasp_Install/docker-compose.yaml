@@ -72,6 +72,25 @@ services:
       - ./hyperion/config:/config
     network_mode: host # use host network for grab
 
+  dynudns:
+      image: koying/dynudns-addon:latest
+      container_name: dynudns
+      restart: unless-stopped
+      network_mode: host
+      environment:
+        - TZ=Europe/Rome
+        - LETS_ENCRYPT_ACCEPT_TERMS=true
+        - LETS_ENCRYPT_CERTFILE=fullchain.pem
+        - LETS_ENCRYPT_KEYFILE=privkey.pem
+        - DUCK_TOKEN=ad1c9e8f-9577-4c7b-9e30-09467506dae8
+        - DYNU_TOKEN=5UVY5XVe3eg25e5Y3ebWZV66736VfdXe
+        - DOMAINS=fastcolors.mywire.org,fastcolors.duckdns.org
+        - ALIASES=
+        - WILDCARD_ALIAS=false
+        - SECONDS=120
+        - LOG_LEVEL=info
+
+
 networks:
   ha-net:
     driver: bridge
