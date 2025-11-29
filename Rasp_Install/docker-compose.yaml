@@ -64,8 +64,8 @@ services:
     image: sirfragalot/hyperion.ng:latest
     container_name: hyperion
     restart: unless-stopped
-#    devices:
-#      - "/dev/video0:/dev/video0"  # framegrabber per Kodi
+    devices:
+      - "/dev/video0:/dev/video0"  # framegrabber per Kodi
     environment:
       - TZ=Europe/Rome
     volumes:
